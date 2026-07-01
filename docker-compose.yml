@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: smart-vault-db
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: smart_vault_db
+      MYSQL_USER: vaultuser
+      MYSQL_PASSWORD: vaultpassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./database:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./smart-vault-backend
+    container_name: smart-vault-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/smart_vault_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      - SPRING_DATASOURCE_USERNAME=vaultuser
+      - SPRING_DATASOURCE_PASSWORD=vaultpassword
+      # Add Cloudinary credentials here if needed for testing
+      - APP_CLOUDINARY_CLOUD_NAME=your_cloud_name
+      - APP_CLOUDINARY_API_KEY=your_api_key
+      - APP_CLOUDINARY_API_SECRET=your_api_secret
+      - APP_FRONTEND_URL=http://localhost:5173
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./smart-vault-frontend
+    container_name: smart-vault-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+volumes:
+  db_data:

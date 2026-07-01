@@ -1,0 +1,14 @@
+node_modules/
+dist/
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+.env
+.idea/
+.vscode/
+*.iml
+local_mysql_data/
+.DS_Store
