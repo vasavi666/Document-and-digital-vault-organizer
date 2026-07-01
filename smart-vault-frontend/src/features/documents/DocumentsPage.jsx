@@ -46,7 +46,11 @@ const DocumentsPage = () => {
     try {
       const formData = new FormData();
       formData.append('file', selectedFile);
-      formData.append('title', uploadTitle);
+      formData.append('metadata', JSON.stringify({
+        title: uploadTitle,
+        description: '',
+        folder: 'General'
+      }));
       
       const response = await documentService.uploadDocument(formData);
       if (response.success) {
