@@ -99,4 +99,20 @@ public class DocumentController {
         DocumentResponse response = documentService.toggleFavorite(id, userId);
         return ResponseEntity.ok(ApiResponse.success("Favorite toggled", response));
     }
+
+    @GetMapping("/files/{fileName:.+}")
+    public ResponseEntity<org.springframework.core.io.Resource> getFile(@PathVariable String fileName) throws IOException {
+        java.nio.file.Path filePath = java.nio.file.Paths.get("uploads").resolve(fileName);
+        org.springframework.core.io.Resource resource = new org.springframework.core.io.UrlResource(filePath.toUri());
+        
+        String contentType = java.nio.file.Files.probeContentType(filePath);
+        if (contentType == null) {
+            contentType = "application/octet-stream";
+        }
+        
+        return ResponseEntity.ok()
+                .contentType(org.springframework.http.MediaType.parseMediaType(contentType))
+                .header(org.springframework.http.HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
+                .body(resource);
+    }
 }
